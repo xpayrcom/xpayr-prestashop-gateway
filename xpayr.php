@@ -12,7 +12,7 @@ class Xpayr extends PaymentModule
     {
         $this->name = 'xpayr';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'XPayr';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -284,7 +284,7 @@ class Xpayr extends PaymentModule
 
     public function hookPayment($params)
     {
-        if (!$this->active || !Configuration::get('XPAYR_LIVE_MODE')) {
+        if (!$this->active || !Configuration::get('XPAYR_LIVE_MODE') || trim((string) Configuration::get('XPAYR_WEBHOOK_SECRET')) === '') {
             return false;
         }
 
@@ -298,7 +298,7 @@ class Xpayr extends PaymentModule
 
     public function hookPaymentOptions($params)
     {
-        if (!$this->active || !Configuration::get('XPAYR_LIVE_MODE')) {
+        if (!$this->active || !Configuration::get('XPAYR_LIVE_MODE') || trim((string) Configuration::get('XPAYR_WEBHOOK_SECRET')) === '') {
             return null;
         }
 

@@ -21,7 +21,12 @@ class XpayrIpnModuleFrontController extends ModuleFrontController
         }
 
         $secret = trim((string) Configuration::get('XPAYR_WEBHOOK_SECRET'));
-        if ($secret !== '') {
+        if ($secret === '') {
+            // Fail closed: never accept an unsigned webhook.
+            $this->respond(503, ['ok' => false, 'error' => 'webhook_secret_not_configured']);
+            return;
+        }
+        {
             $headerSig = isset($_SERVER['HTTP_X_XPAYR_SIGNATURE']) ? (string) $_SERVER['HTTP_X_XPAYR_SIGNATURE'] : '';
             if ($headerSig === '') {
                 $this->respond(401, ['ok' => false, 'error' => 'missing_signature']);
@@ -30,7 +35,7 @@ class XpayrIpnModuleFrontController extends ModuleFrontController
 
             $expected = hash_hmac('sha256', (string) $raw, $secret);
             if (!hash_equals($expected, $headerSig)) {
-                $this->module->debug('ipn: invalid signature expected=' . $expected . ' got=' . $headerSig);
+                $this->module->debug('ipn: invalid signature');
                 $this->respond(401, ['ok' => false, 'error' => 'invalid_signature']);
                 return;
             }
